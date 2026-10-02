@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>October 2026 Compensation Calculator</title>
+<style>
+  :root{
+    --bg:#07111f;
+    --panel:#0d1b2d;
+    --panel2:#11243b;
+    --text:#f8fafc;
+    --muted:#9fb0c6;
+    --line:#233853;
+    --accent:#4ea1ff;
+    --accent2:#7cc3ff;
+    --good:#45d483;
+    --warn:#ffcc66;
+    --bad:#ff7b7b;
+    --shadow:0 18px 45px rgba(0,0,0,.28);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:linear-gradient(180deg,#06101d 0%,#0a1422 100%);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    min-height:100vh;
+  }
+  .wrap{max-width:980px;margin:0 auto;padding:20px}
+  .hero{
+    padding:22px;
+    border:1px solid var(--line);
+    background:linear-gradient(135deg,rgba(78,161,255,.11),rgba(124,195,255,.04));
+    border-radius:22px;
+    box-shadow:var(--shadow);
+    margin-bottom:18px;
+  }
+  .eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent2);font-weight:800}
+  h1{font-size:clamp(28px,6vw,44px);line-height:1.04;margin:8px 0 8px}
+  .hero p{margin:0;color:var(--muted);font-size:15px;line-height:1.5}
+  .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}
+  .summary{
+    border:1px solid var(--line);
+    background:var(--panel);
+    border-radius:18px;
+    padding:16px;
+  }
+  .summary.total{background:linear-gradient(135deg,rgba(78,161,255,.18),rgba(78,161,255,.07));border-color:#2f6faf}
+  .summary .label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800}
+  .summary .value{font-size:clamp(22px,4vw,32px);font-weight:900;margin-top:6px;word-break:break-word}
+  .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  .card{
+    border:1px solid var(--line);
+    background:var(--panel);
+    border-radius:20px;
+    padding:18px;
+  }
+  .card h2{font-size:19px;margin:0 0 4px}
+  .card .sub{font-size:13px;color:var(--muted);line-height:1.4;margin-bottom:15px}
+  .fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  label{display:block;font-size:12px;font-weight:800;color:#d6e3f2}
+  input{
+    width:100%;
+    margin-top:6px;
+    min-height:48px;
+    border-radius:12px;
+    border:1px solid var(--line);
+    background:#091624;
+    color:var(--text);
+    padding:11px 12px;
+    font-size:17px;
+    outline:none;
+  }
+  input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(78,161,255,.15)}
+  .mini{
+    margin-top:15px;
+    padding-top:13px;
+    border-top:1px solid var(--line);
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+    color:var(--muted);
+    font-size:13px;
+  }
+  .mini b{color:var(--text)}
+  .bonus-card{margin-top:14px}
+  .bonus-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .bonus-status{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
+  .pillbox{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:12px}
+  .pillbox .small{font-size:11px;color:var(--muted);font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+  .pillbox .big{font-size:20px;font-weight:900;margin-top:4px}
+  .breakdown{margin-top:14px;overflow:hidden}
+  .row{display:flex;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .row:last-child{border-bottom:none}
+  .row strong:last-child{font-size:18px}
+  .formula{
+    margin-top:14px;
+    border:1px dashed #395779;
+    background:#091523;
+    border-radius:16px;
+    padding:14px;
+    font-size:13px;
+    color:var(--muted);
+    line-height:1.55;
+  }
+  .formula b{color:var(--text)}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+  button{
+    appearance:none;
+    border:1px solid var(--line);
+    background:var(--panel2);
+    color:var(--text);
+    min-height:46px;
+    padding:10px 15px;
+    border-radius:12px;
+    font-size:14px;
+    font-weight:800;
+    cursor:pointer;
+  }
+  button.primary{background:var(--accent);border-color:var(--accent);color:#04111f}
+  button:hover{filter:brightness(1.07)}
+  .notice{font-size:12px;color:var(--warn);margin-top:10px;min-height:18px}
+  .footer{text-align:center;color:#6f839c;font-size:11px;padding:24px 0 12px;line-height:1.5}
+  .good{color:var(--good)!important}.warn{color:var(--warn)!important}
+
+  @media(max-width:760px){
+    .summary-grid{grid-template-columns:repeat(2,1fr)}
+    .grid{grid-template-columns:1fr}
+  }
+  @media(max-width:460px){
+    .wrap{padding:12px}
+    .hero,.card{border-radius:16px;padding:15px}
+    .fields,.bonus-row,.bonus-status{grid-template-columns:1fr}
+    .summary-grid{gap:8px}
+    .summary{padding:12px;border-radius:14px}
+    .summary .value{font-size:21px}
+  }
+  @media print{
+    body{background:#fff;color:#000}
+    .wrap{max-width:none;padding:0}
+    .hero,.summary,.card{box-shadow:none;background:#fff;color:#000;border-color:#bbb}
+    .hero p,.sub,.mini,.formula,.footer,.summary .label{color:#555}
+    input{color:#000;background:#fff;border-color:#aaa}
+    .actions{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section class="hero">
+    <div class="eyebrow">October 2026</div>
+    <h1>Compensation Calculator</h1>
+    <p>No minimums. Get paid on every New Activation, AIA, Accessory dollar and Connected Device. Then HTP and CSAT bonuses are added on top of your production payout.</p>
+  </section>
+
+  <section class="summary-grid" aria-live="polite">
+    <div class="summary"><div class="label">Production Pay</div><div class="value" id="productionTotal">$0.00</div></div>
+    <div class="summary"><div class="label">Bonus Rate</div><div class="value" id="bonusRate">0.00%</div></div>
+    <div class="summary"><div class="label">Bonus Dollars</div><div class="value" id="bonusDollars">$0.00</div></div>
+    <div class="summary total"><div class="label">Total Compensation</div><div class="value" id="grandTotal">$0.00</div></div>
+  </section>
+
+  <section class="grid">
+    <div class="card">
+      <h2>New Activations</h2>
+      <div class="sub">$5 base per activation, plus PA, Premium Loading and Next Up Anytime percentages converted directly into dollars.</div>
+      <div class="fields">
+        <label>New Activations<input id="newActs" type="number" min="0" step="1" inputmode="numeric" value="0"></label>
+        <label>ProtectAdvantage %<input id="pa" type="number" min="0" step="0.1" inputmode="decimal" value="0"></label>
+        <label>Premium Loading %<input id="premium" type="number" min="0" step="0.1" inputmode="decimal" value="0"></label>
+        <label>Next Up Anytime %<input id="nua" type="number" min="0" step="0.1" inputmode="decimal" value="0"></label>
+      </div>
+      <div class="mini"><span>Pay per activation: <b id="newPer">$5.00</b></span><span>Total: <b id="newTotal">$0.00</b></span></div>
+    </div>
+
+    <div class="card">
+      <h2>AIA</h2>
+      <div class="sub">10% close rate = $40 per AIA. Payout scales directly with close rate and caps at 15% / $60 per unit.</div>
+      <div class="fields">
+        <label>AIA Units<input id="aiaUnits" type="number" min="0" step="1" inputmode="numeric" value="0"></label>
+        <label>AIA Close Rate %<input id="aiaRate" type="number" min="0" step="0.1" inputmode="decimal" value="0"></label>
+      </div>
+      <div class="mini"><span>Pay per AIA: <b id="aiaPer">$0.00</b></span><span>Total: <b id="aiaTotal">$0.00</b></span></div>
+    </div>
+
+    <div class="card">
+      <h2>Accessories</h2>
+      <div class="sub">Accessory dollars per opportunity converts directly to a payout percentage of your accessory revenue.</div>
+      <div class="fields">
+        <label>Accessory Revenue $<input id="accRevenue" type="number" min="0" step="0.01" inputmode="decimal" value="0"></label>
+        <label>Accessory $ / OPP<input id="accOpp" type="number" min="0" step="0.01" inputmode="decimal" value="0"></label>
+      </div>
+      <div class="mini"><span>Payout rate: <b id="accRate">0.000%</b></span><span>Total: <b id="accTotal">$0.00</b></span></div>
+    </div>
+
+    <div class="card">
+      <h2>Connected Devices</h2>
+      <div class="sub">Your total upgrades determine the payout amount for each connected device: upgrades × $0.25.</div>
+      <div class="fields">
+        <label>Connected Devices<input id="connected" type="number" min="0" step="1" inputmode="numeric" value="0"></label>
+        <label>Upgrades<input id="upgrades" type="number" min="0" step="1" inputmode="numeric" value="0"></label>
+      </div>
+      <div class="mini"><span>Pay per connected: <b id="connectedPer">$0.00</b></span><span>Total: <b id="connectedTotal">$0.00</b></span></div>
+    </div>
+  </section>
+
+  <section class="card bonus-card">
+    <h2>HTP + CSAT Bonus</h2>
+    <div class="sub">These bonuses apply to the combined total of all four production categories above.</div>
+    <div class="bonus-row">
+      <label>HTP %<input id="htp" type="number" min="0" step="0.1" inputmode="decimal" value="0"></label>
+      <label>CSAT %<input id="csat" type="number" min="0" max="100" step="0.1" inputmode="decimal" value="0"></label>
+    </div>
+    <div class="bonus-status">
+      <div class="pillbox"><div class="small">HTP Bonus</div><div class="big" id="htpBonus">0.00%</div></div>
+      <div class="pillbox"><div class="small">CSAT Bonus</div><div class="big" id="csatBonus">Not eligible</div></div>
+    </div>
+    <div class="notice" id="notice"></div>
+  </section>
+
+  <section class="card breakdown">
+    <h2>Payout Breakdown</h2>
+    <div class="row"><span>New Activations</span><b id="rowNew">$0.00</b></div>
+    <div class="row"><span>AIA</span><b id="rowAia">$0.00</b></div>
+    <div class="row"><span>Accessories</span><b id="rowAcc">$0.00</b></div>
+    <div class="row"><span>Connected Devices</span><b id="rowConnected">$0.00</b></div>
+    <div class="row"><strong>Production Subtotal</strong><strong id="rowProduction">$0.00</strong></div>
+    <div class="row"><span id="rowBonusLabel">HTP + CSAT Bonus (0.00%)</span><b id="rowBonus">$0.00</b></div>
+    <div class="row"><strong>TOTAL COMPENSATION</strong><strong id="rowGrand">$0.00</strong></div>
+  </section>
+
+  <section class="formula">
+    <b>How the calculator works</b><br>
+    New Activation = $5 + (PA % ÷ 10) + (Premium Loading % ÷ 10) + (NUA % ÷ 10), multiplied by new activations.<br>
+    AIA = AIA units × (close rate % × $4), capped at $60 per AIA.<br>
+    Accessories = accessory revenue × (accessory $/opp ÷ 1000). Example: $43.22/opp = 4.322%.<br>
+    Connected = connected devices × (upgrades × $0.25).<br>
+    HTP bonus = entered HTP %, capped at 15%. CSAT bonus = CSAT % ÷ 10 when CSAT is at least 90%; otherwise 0%.<br>
+    Total compensation = production subtotal + HTP/CSAT bonus dollars.
+  </section>
+
+  <div class="actions">
+    <button class="primary" id="exampleBtn" type="button">Load Example</button>
+    <button id="resetBtn" type="button">Reset Calculator</button>
+    <button id="printBtn" type="button">Print / Save PDF</button>
+  </div>
+
+  <div class="footer">Rep calculator for October 2026. This tool calculates using the compensation rules entered above; final payroll is subject to official company reporting and adjustments.</div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const ids = ['newActs','pa','premium','nua','aiaUnits','aiaRate','accRevenue','accOpp','connected','upgrades','htp','csat'];
+
+  function num(id){
+    const x = parseFloat($(id).value);
+    return Number.isFinite(x) && x > 0 ? x : 0;
+  }
+  function money(x){
+    return '$' + x.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+  }
+  function percent(x, digits=2){
+    return x.toFixed(digits) + '%';
+  }
+
+  function calculate(){
+    // NEW ACTIVATIONS
+    const acts = num('newActs');
+    const pa = num('pa');
+    const premium = num('premium');
+    const nua = num('nua');
+    const newPer = 5 + (pa/10) + (premium/10) + (nua/10);
+    const newTotal = acts * newPer;
+
+    // AIA
+    const aiaUnits = num('aiaUnits');
+    const aiaCloseRaw = num('aiaRate');
+    const aiaClosePaid = Math.min(aiaCloseRaw,15);
+    const aiaPer = aiaClosePaid * 4;
+    const aiaTotal = aiaUnits * aiaPer;
+
+    // ACCESSORIES
+    const accRevenue = num('accRevenue');
+    const accOpp = num('accOpp');
+    const accPct = accOpp / 10;       // 43.22 -> 4.322%
+    const accTotal = accRevenue * (accPct/100);
+
+    // CONNECTED
+    const connected = num('connected');
+    const upgrades = num('upgrades');
+    const connectedPer = upgrades * 0.25;
+    const connectedTotal = connected * connectedPer;
+
+    // PRODUCTION
+    const production = newTotal + aiaTotal + accTotal + connectedTotal;
+
+    // BONUSES
+    const htpRaw = num('htp');
+    const htpPaid = Math.min(htpRaw,15);
+    const csat = Math.min(num('csat'),100);
+    const csatEligible = csat >= 90;
+    const csatPaid = csatEligible ? csat/10 : 0;
+    const bonusPct = htpPaid + csatPaid;
+    const bonusDollars = production * (bonusPct/100);
+    const grand = production + bonusDollars;
+
+    $('newPer').textContent = money(newPer);
+    $('newTotal').textContent = money(newTotal);
+    $('aiaPer').textContent = money(aiaPer);
+    $('aiaTotal').textContent = money(aiaTotal);
+    $('accRate').textContent = percent(accPct,3);
+    $('accTotal').textContent = money(accTotal);
+    $('connectedPer').textContent = money(connectedPer);
+    $('connectedTotal').textContent = money(connectedTotal);
+
+    $('productionTotal').textContent = money(production);
+    $('bonusRate').textContent = percent(bonusPct);
+    $('bonusDollars').textContent = money(bonusDollars);
+    $('grandTotal').textContent = money(grand);
+
+    $('htpBonus').textContent = percent(htpPaid) + (htpRaw > 15 ? ' (capped)' : '');
+    $('csatBonus').textContent = csatEligible ? percent(csatPaid) : 'Not eligible';
+    $('csatBonus').className = 'big ' + (csatEligible ? 'good' : (csat > 0 ? 'warn' : ''));
+
+    $('rowNew').textContent = money(newTotal);
+    $('rowAia').textContent = money(aiaTotal);
+    $('rowAcc').textContent = money(accTotal);
+    $('rowConnected').textContent = money(connectedTotal);
+    $('rowProduction').textContent = money(production);
+    $('rowBonusLabel').textContent = 'HTP + CSAT Bonus (' + percent(bonusPct) + ')';
+    $('rowBonus').textContent = money(bonusDollars);
+    $('rowGrand').textContent = money(grand);
+
+    const notes=[];
+    if(aiaCloseRaw > 15) notes.push('AIA payout is capped at a 15% close rate / $60 per unit.');
+    if(htpRaw > 15) notes.push('HTP bonus is capped at 15%.');
+    if(csat > 0 && csat < 90) notes.push('CSAT is below 90%, so the CSAT bonus is $0.');
+    $('notice').textContent = notes.join(' ');
+  }
+
+  ids.forEach(id => $(id).addEventListener('input', calculate));
+
+  $('resetBtn').addEventListener('click', function(){
+    ids.forEach(id => $(id).value = 0);
+    calculate();
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+
+  $('exampleBtn').addEventListener('click', function(){
+    // A balanced demonstration using the examples provided in the October plan.
+    $('newActs').value = 10;
+    $('pa').value = 47.6;
+    $('premium').value = 51.6;
+    $('nua').value = 68.4;
+    $('aiaUnits').value = 5;
+    $('aiaRate').value = 10;
+    $('accRevenue').value = 2000;
+    $('accOpp').value = 43.22;
+    $('connected').value = 4;
+    $('upgrades').value = 24;
+    $('htp').value = 5.4;
+    $('csat').value = 96.3;
+    calculate();
+  });
+
+  $('printBtn').addEventListener('click', function(){ window.print(); });
+
+  calculate();
+})();
+</script>
+</body>
+</html>
